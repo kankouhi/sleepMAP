@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>居眠り議員マップ（デモ）</title>
+<style>
+  :root{
+    --yellow:#FFC400;
+    --yellow-soft:#FFF3C4;
+    --red:#E5484D;
+    --red-soft:#FDE2E2;
+    --green:#2FA86A;
+    --green-soft:#E1F6EA;
+    --blue:#2F7FE5;
+    --blue-soft:#E4EEFB;
+    --ink:#2B2B33;
+    --ink-soft:#6B6B76;
+    --bg:#FFFCF3;
+    --card:#FFFFFF;
+    --border:#EFE7D0;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"Yu Gothic","YuGothic","游ゴシック体","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
+    line-height:1.6;
+    padding-top:96px;
+  }
+  a{color:var(--blue); text-decoration:none;}
+  a:hover{text-decoration:underline;}
+
+  /* 免責バナー：常に最上部に固定 */
+  .disclaimer-banner{
+    position:fixed; top:0; left:0; right:0; z-index:1000;
+    background:repeating-linear-gradient(135deg, var(--yellow) 0 18px, #FFE066 18px 36px);
+    color:#5c4400;
+    font-weight:700;
+    text-align:center;
+    padding:8px 12px;
+    font-size:0.86rem;
+    border-bottom:3px solid var(--red);
+    box-shadow:0 2px 8px rgba(0,0,0,0.08);
+  }
+  .disclaimer-banner strong{color:#a33;}
+
+  .site-header{
+    position:fixed; top:38px; left:0; right:0; z-index:999;
+    background:#fff;
+    border-bottom:1px solid var(--border);
+    padding:8px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .brand{
+    font-weight:800; font-size:1.05rem;
+    display:flex; align-items:center; gap:6px;
+  }
+  .brand-emoji{font-size:1.3rem;}
+  nav.tabs{display:flex; gap:6px; flex-wrap:wrap;}
+  nav.tabs a{
+    padding:6px 12px; border-radius:999px; font-weight:600; font-size:0.88rem;
+    color:var(--ink-soft); background:#F7F3E4;
+  }
+  nav.tabs a.active{
+    background:var(--blue); color:#fff;
+  }
+
+  main{max-width:1080px; margin:0 auto; padding:20px 16px 60px;}
+
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:18px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.03);
+  }
+
+  h1{font-size:1.5rem; margin:0 0 6px;}
+  h2{font-size:1.2rem; margin:0 0 10px; display:flex; align-items:center; gap:8px;}
+  h3{font-size:1.02rem; margin:0 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:0.92rem; margin-bottom:16px;}
+
+  .note-box{
+    background:var(--yellow-soft);
+    border:1px dashed var(--yellow);
+    border-radius:12px;
+    padding:12px 14px;
+    font-size:0.88rem;
+    color:#6b5400;
+    margin-bottom:16px;
+  }
+  .note-box b{color:#a33;}
+
+  /* ヒートマップ */
+  .heatmap-wrap{overflow-x:auto;}
+  table.heatmap{border-collapse:collapse; width:100%; font-size:0.78rem; min-width:760px;}
+  table.heatmap th, table.heatmap td{
+    border:1px solid var(--border);
+    padding:6px 8px;
+    text-align:center;
+    white-space:nowrap;
+  }
+  table.heatmap th{background:#FBF7EA; font-weight:700;}
+  table.heatmap th.legislator-col, table.heatmap td.legislator-col{
+    text-align:left; position:sticky; left:0; background:#FBF7EA; z-index:2;
+    min-width:150px;
+  }
+  table.heatmap td.cell{color:#4a1414; font-weight:700; cursor:default;}
+  .legend{display:flex; align-items:center; gap:8px; font-size:0.8rem; margin-top:10px; color:var(--ink-soft); flex-wrap:wrap;}
+  .legend-swatch{width:16px; height:16px; border-radius:4px; display:inline-block; border:1px solid var(--border);}
+
+  /* ランキング */
+  .ranking-list{list-style:none; margin:0; padding:0;}
+  .ranking-list li{
+    display:flex; align-items:center; gap:12px;
+    padding:10px 6px; border-bottom:1px solid var(--border);
+  }
+  .ranking-list li:last-child{border-bottom:none;}
+  .rank-num{
+    font-weight:800; font-size:1.1rem; width:28px; text-align:center; color:var(--blue);
+  }
+  .rank-name{font-weight:700; flex:1;}
+  .rank-party{font-size:0.78rem; color:var(--ink-soft);}
+  .zzz{color:var(--red); letter-spacing:1px;}
+  .rank-detail{font-size:0.78rem; color:var(--ink-soft); white-space:nowrap;}
+
+  /* 議員一覧 */
+  .list-controls{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;}
+  .list-controls select{
+    padding:7px 10px; border-radius:8px; border:1px solid var(--border); background:#fff; font-family:inherit;
+  }
+  .legislator-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px;}
+  .legislator-card{
+    background:#fff; border:1px solid var(--border); border-radius:14px; padding:14px;
+    display:flex; flex-direction:column; gap:6px;
+  }
+  .legislator-card .name{font-weight:800; font-size:1.05rem;}
+  .party-badge{
+    display:inline-block; font-size:0.72rem; padding:2px 8px; border-radius:999px;
+    background:var(--blue-soft); color:var(--blue); font-weight:700; width:fit-content;
+  }
+  .legislator-card .stats{display:flex; gap:14px; font-size:0.82rem; color:var(--ink-soft); margin-top:4px;}
+  .legislator-card .stats b{color:var(--ink); font-size:1rem;}
+
+  /* プロフィールページ */
+  .profile-header{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;}
+  .summary-stats{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px;}
+  .stat-pill{
+    background:var(--yellow-soft); border:1px solid var(--yellow);
+    border-radius:12px; padding:10px 16px; text-align:center; min-width:110px;
+  }
+  .stat-pill .num{font-size:1.5rem; font-weight:800; color:#8a5a00;}
+  .stat-pill .label{font-size:0.76rem; color:var(--ink-soft);}
+
+  .timeline{list-style:none; margin:0; padding:0;}
+  .timeline li{
+    border-left:4px solid var(--border);
+    padding:10px 14px; margin-bottom:10px; border-radius:0 10px 10px 0;
+    background:#FAFAF6;
+  }
+  .timeline li.explained{border-left-color:var(--green); background:var(--green-soft);}
+  .timeline li.unexplained{border-left-color:var(--red); background:var(--red-soft);}
+  .event-top{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-weight:700;}
+  .event-meta{font-size:0.8rem; color:var(--ink-soft); margin-top:4px;}
+  .badge{
+    display:inline-block; font-size:0.72rem; padding:2px 8px; border-radius:999px; font-weight:700; margin-right:4px;
+  }
+  .badge.confirmed{background:var(--blue-soft); color:var(--blue);}
+  .badge.unclear{background:#EFEFEF; color:var(--ink-soft);}
+  .badge.explained{background:var(--green-soft); color:var(--green);}
+  .badge.unexplained{background:var(--red-soft); color:var(--red);}
+  .video-link{
+    display:inline-block; margin-top:6px; font-size:0.82rem; font-weight:700;
+    background:#fff; border:1px solid var(--border); border-radius:8px; padding:4px 10px; cursor:pointer;
+  }
+
+  footer{
+    text-align:center; color:var(--ink-soft); font-size:0.78rem; padding:20px; max-width:1080px; margin:0 auto;
+  }
+
+  /* モーダル */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.45); display:none;
+    align-items:center; justify-content:center; z-index:2000; padding:16px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:#fff; border-radius:16px; padding:22px; max-width:360px; text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.2);
+  }
+  .modal-box button{
+    margin-top:14px; padding:8px 20px; border:none; border-radius:999px;
+    background:var(--blue); color:#fff; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+
+  @media (max-width:640px){
+    body{padding-top:118px;}
+    .site-header{top:46px; flex-direction:column; align-items:flex-start;}
+    .disclaimer-banner{font-size:0.74rem; padding:8px;}
+    .summary-stats{gap:8px;}
+    .stat-pill{min-width:90px; padding:8px 10px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="disclaimer-banner">
+  ⚠️ これは<strong>サンプルデモ</strong>です。登場人物・データはすべて<strong>架空</strong>であり、実在の政治家・政党とは一切関係ありません。
+</div>
+
+<header class="site-header">
+  <div class="brand"><span class="brand-emoji">💤</span>居眠り議員マップ（デモ）</div>
+  <nav class="tabs" id="nav-tabs">
+    <a href="#/" data-route="/">マップ</a>
+    <a href="#/list" data-route="/list">議員一覧</a>
+    <a href="#/about" data-route="/about">このサイトについて</a>
+  </nav>
+</header>
+
+<main id="app"></main>
+
+<footer>
+  本デモは架空の人物・架空のデータのみで構成されたビジュアルサンプルです。実在の個人・団体を評価するものではありません。
+</footer>
+
+<div class="modal-overlay" id="video-modal">
+  <div class="modal-box">
+    <div style="font-size:2rem;">🎬🚫</div>
+    <p><b>この動画リンクはデモ用のダミーです。</b><br>実際には動画は存在せず、再生もされません。</p>
+    <button id="video-modal-close">閉じる</button>
+  </div>
+</div>
+
+<script>
+/* ==========================================================
+   モックデータ（すべて架空。実在の人物・団体とは無関係です）
+   ========================================================== */
+
+const PARTIES = ["みらい創造党", "国民の声党", "新緑同盟"];
+
+const LEGISLATORS = [
+  { id:"L1", name:"夢見 一郎",   kana:"ゆめみ いちろう", party:"みらい創造党", district:"居眠県第1区",     terms:3 },
+  { id:"L2", name:"寝坊 花子",   kana:"ねぼう はなこ",   party:"国民の声党",   district:"微睡県第2区",     terms:2 },
+  { id:"L3", name:"居眠 圭介",   kana:"いねむり けいすけ", party:"みらい創造党", district:"比例北部ブロック", terms:5 },
+  { id:"L4", name:"舟漕 三郎",   kana:"ふねこぎ さぶろう", party:"新緑同盟",     district:"舟漕県第3区",     terms:1 },
+  { id:"L5", name:"半眼田 五郎", kana:"はんがんだ ごろう", party:"国民の声党",   district:"半眼県第1区",     terms:4 },
+  { id:"L6", name:"瞬 美咲",     kana:"まばたき みさき", party:"新緑同盟",     district:"比例中部ブロック", terms:2 },
+  { id:"L7", name:"睡魔 次郎",   kana:"すいま じろう",   party:"みらい創造党", district:"寝落ち県第2区",   terms:6 },
+  { id:"L8", name:"目覚谷 ひろし", kana:"めざめだに ひろし", party:"国民の声党", district:"比例南部ブロック", terms:3 },
+];
+
+const MEETINGS = [
+  { id:"M1",  name:"本会議",             datetime:"2026-01-23 10:00" },
+  { id:"M2",  name:"予算委員会",         datetime:"2026-02-05 13:00" },
+  { id:"M3",  name:"厚生労働委員会",     datetime:"2026-02-18 10:00" },
+  { id:"M4",  name:"予算委員会（参議院）", datetime:"2026-02-25 14:00" },
+  { id:"M5",  name:"決算行政監視委員会", datetime:"2026-03-10 10:00" },
+  { id:"M6",  name:"文部科学委員会",     datetime:"2026-03-24 13:30" },
+  { id:"M7",  name:"国土交通委員会",     datetime:"2026-04-07 10:00" },
+  { id:"M8",  name:"本会議（参議院）",   datetime:"2026-04-21 13:00" },
+  { id:"M9",  name:"経済産業委員会",     datetime:"2026-05-12 10:00" },
+  { id:"M10", name:"深夜審議・特別委員会", datetime:"2026-06-02 23:40" },
+];
+
+const SOURCES = [
+  "国会中継アーカイブ（架空）",
+  "議事録映像（架空）",
+  "SNS投稿（架空）",
+  "報道映像（架空）",
+];
+
+// explanation: null = 説明なし
+const EVENTS = [
+  { id:"E1",  legislatorId:"L1", meetingId:"M1",  minutes:8,  source:SOURCES[0], video:"#demo-video-1",  explanation:null, confidence:"confirmed" },
+  { id:"E2",  legislatorId:"L1", meetingId:"M3",  minutes:15, source:SOURCES[1], video:"#demo-video-2",  explanation:"体調不良と説明", confidence:"confirmed" },
+  { id:"E3",  legislatorId:"L1", meetingId:"M9",  minutes:4,  source:SOURCES[2], video:"#demo-video-3",  explanation:null, confidence:"unclear" },
+  { id:"E4",  legislatorId:"L1", meetingId:"M10", minutes:20, source:SOURCES[0], video:"#demo-video-4",  explanation:"深夜審議のため疲労と説明", confidence:"confirmed" },
+
+  { id:"E5",  legislatorId:"L2", meetingId:"M2",  minutes:6,  source:SOURCES[2], video:"#demo-video-5",  explanation:null, confidence:"unclear" },
+  { id:"E6",  legislatorId:"L2", meetingId:"M5",  minutes:12, source:SOURCES[1], video:"#demo-video-6",  explanation:"薬の副作用の可能性と説明", confidence:"confirmed" },
+  { id:"E7",  legislatorId:"L2", meetingId:"M10", minutes:18, source:SOURCES[0], video:"#demo-video-7",  explanation:"深夜審議のため疲労と説明", confidence:"confirmed" },
+
+  { id:"E8",  legislatorId:"L3", meetingId:"M1",  minutes:10, source:SOURCES[0], video:"#demo-video-8",  explanation:null, confidence:"confirmed" },
+  { id:"E9",  legislatorId:"L3", meetingId:"M2",  minutes:9,  source:SOURCES[3], video:"#demo-video-9",  explanation:null, confidence:"confirmed" },
+  { id:"E10", legislatorId:"L3", meetingId:"M4",  minutes:5,  source:SOURCES[2], video:"#demo-video-10", explanation:null, confidence:"unclear" },
+  { id:"E11", legislatorId:"L3", meetingId:"M8",  minutes:14, source:SOURCES[1], video:"#demo-video-11", explanation:"考え事をしていたと説明", confidence:"unclear" },
+  { id:"E12", legislatorId:"L3", meetingId:"M10", minutes:22, source:SOURCES[0], video:"#demo-video-12", explanation:null, confidence:"confirmed" },
+
+  { id:"E13", legislatorId:"L4", meetingId:"M6",  minutes:3,  source:SOURCES[2], video:"#demo-video-13", explanation:null, confidence:"unclear" },
+  { id:"E14", legislatorId:"L4", meetingId:"M7",  minutes:7,  source:SOURCES[1], video:"#demo-video-14", explanation:"体調不良と説明", confidence:"confirmed" },
+
+  { id:"E15", legislatorId:"L5", meetingId:"M1",  minutes:11, source:SOURCES[0], video:"#demo-video-15", explanation:null, confidence:"confirmed" },
+  { id:"E16", legislatorId:"L5", meetingId:"M3",  minutes:16, source:SOURCES[0], video:"#demo-video-16", explanation:null, confidence:"confirmed" },
+  { id:"E17", legislatorId:"L5", meetingId:"M5",  minutes:6,  source:SOURCES[3], video:"#demo-video-17", explanation:"考え事をしていたと説明", confidence:"unclear" },
+  { id:"E18", legislatorId:"L5", meetingId:"M9",  minutes:13, source:SOURCES[1], video:"#demo-video-18", explanation:null, confidence:"confirmed" },
+  { id:"E19", legislatorId:"L5", meetingId:"M10", minutes:19, source:SOURCES[0], video:"#demo-video-19", explanation:"深夜審議のため疲労と説明", confidence:"confirmed" },
+
+  { id:"E20", legislatorId:"L6", meetingId:"M6",  minutes:5,  source:SOURCES[2], video:"#demo-video-20", explanation:null, confidence:"unclear" },
+
+  { id:"E21", legislatorId:"L7", meetingId:"M2",  minutes:9,  source:SOURCES[1], video:"#demo-video-21", explanation:null, confidence:"confirmed" },
+  { id:"E22", legislatorId:"L7", meetingId:"M4",  minutes:17, source:SOURCES[0], video:"#demo-video-22", explanation:null, confidence:"confirmed" },
+  { id:"E23", legislatorId:"L7", meetingId:"M8",  minutes:8,  source:SOURCES[3], video:"#demo-video-23", explanation:"薬の副作用の可能性と説明", confidence:"unclear" },
+  { id:"E24", legislatorId:"L7", meetingId:"M10", minutes:21, source:SOURCES[0], video:"#demo-video-24", explanation:null, confidence:"confirmed" },
+  // L8（目覚谷ひろし）は居眠りイベント 0 件
+];
+
+/* ==========================================================
+   集計ユーティリティ
+   ========================================================== */
+
+function legislatorEvents(legislatorId){
+  return EVENTS.filter(e => e.legislatorId === legislatorId);
+}
+function totalMinutes(legislatorId){
+  return legislatorEvents(legislatorId).reduce((s,e)=>s+e.minutes,0);
+}
+function totalCount(legislatorId){
+  return legislatorEvents(legislatorId).length;
+}
+function cellData(legislatorId, meetingId){
+  const evs = EVENTS.filter(e=>e.legislatorId===legislatorId && e.meetingId===meetingId);
+  return { count: evs.length, minutes: evs.reduce((s,e)=>s+e.minutes,0) };
+}
+const MAX_CELL_MINUTES = Math.max(...MEETINGS.flatMap(m=>LEGISLATORS.map(l=>cellData(l.id,m.id).minutes)));
+
+function heatColor(minutes){
+  if(minutes<=0) return "#FBF7EA";
+  const ratio = Math.min(1, minutes / MAX_CELL_MINUTES);
+  // 白(253,253,246) -> 赤(229,72,77) の補間
+  const r = Math.round(253 + (229-253)*ratio);
+  const g = Math.round(253 + (72-253)*ratio);
+  const b = Math.round(246 + (77-246)*ratio);
+  return `rgb(${r},${g},${b})`;
+}
+
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* ==========================================================
+   ルーター & レンダリング
+   ========================================================== */
+
+const app = document.getElementById("app");
+
+function render(){
+  const hash = location.hash || "#/";
+  const path = hash.replace(/^#/, "") || "/";
+  updateNav(path);
+
+  if(path === "/" || path === "") {
+    app.innerHTML = renderHome();
+  } else if(path === "/list") {
+    app.innerHTML = renderList();
+    bindListControls();
+  } else if(path.startsWith("/legislator/")) {
+    const id = path.split("/")[2];
+    app.innerHTML = renderProfile(id);
+  } else if(path === "/about") {
+    app.innerHTML = renderAbout();
+  } else {
+    app.innerHTML = "<div class='card'>ページが見つかりません。</div>";
+  }
+  bindVideoLinks();
+  window.scrollTo(0,0);
+}
+
+function updateNav(path){
+  document.querySelectorAll("#nav-tabs a").forEach(a=>{
+    const route = a.dataset.route;
+    const active = (route === "/" && path === "/") ||
+                    (route !== "/" && path.startsWith(route));
+    a.classList.toggle("active", active);
+  });
+}
+
+/* ---------- ホーム：ヒートマップ + ランキング ---------- */
+
+function renderHome(){
+  const heatmapRows = LEGISLATORS.map(leg=>{
+    const cells = MEETINGS.map(m=>{
+      const d = cellData(leg.id, m.id);
+      const bg = heatColor(d.minutes);
+      const title = d.count>0 ? `${m.name}：${d.count}件 / 計${d.minutes}分` : `${m.name}：記録なし`;
+      return `<td class="cell" style="background:${bg}" title="${escapeHtml(title)}">${d.minutes>0? d.minutes : ""}</td>`;
+    }).join("");
+    return `<tr>
+      <td class="legislator-col"><a href="#/legislator/${leg.id}">${leg.name}</a><br><span style="font-size:0.72rem;color:var(--ink-soft)">${leg.party}</span></td>
+      ${cells}
+    </tr>`;
+  }).join("");
+
+  const headerCells = MEETINGS.map(m=>`<th title="${escapeHtml(m.datetime)}">${m.name}</th>`).join("");
+
+  const ranking = [...LEGISLATORS]
+    .sort((a,b)=> totalCount(b.id)-totalCount(a.id) || totalMinutes(b.id)-totalMinutes(a.id))
+    .slice(0,6);
+
+  const rankingHtml = ranking.map((leg,i)=>{
+    const c = totalCount(leg.id);
+    const min = totalMinutes(leg.id);
+    const zzz = "💤".repeat(Math.min(5, c)) || "－";
+    return `<li>
+      <span class="rank-num">${i+1}</span>
+      <div style="flex:1;">
+        <div class="rank-name"><a href="#/legislator/${leg.id}">${leg.name}</a> <span class="rank-party">（${leg.party}）</span></div>
+        <div class="zzz">${zzz}</div>
+      </div>
+      <div class="rank-detail">${c}件 / 計${min}分</div>
+    </li>`;
+  }).join("");
+
+  return `
+    <div class="note-box">
+      🤔 <b>「居眠り」の判定は本来グレーゾーンです。</b>目を閉じていても考え事をしていた場合や、体調不良・服薬の影響で目を閉じていた場合もあります。このマップはあくまで記録の一例であり、断定的な評価ではありません。
+    </div>
+
+    <div class="card">
+      <h2>🗺️ 議員 × 会議 居眠りヒートマップ</h2>
+      <p class="subtitle">セルの色が濃いほど、その会議での居眠り推定時間（分）が長いことを示します（架空データ）。数字は合計分数。</p>
+      <div class="heatmap-wrap">
+        <table class="heatmap">
+          <thead><tr><th class="legislator-col">議員</th>${headerCells}</tr></thead>
+          <tbody>${heatmapRows}</tbody>
+        </table>
+      </div>
+      <div class="legend">
+        <span class="legend-swatch" style="background:${heatColor(0)}"></span>記録なし
+        <span class="legend-swatch" style="background:${heatColor(MAX_CELL_MINUTES*0.3)}"></span>少ない
+        <span class="legend-swatch" style="background:${heatColor(MAX_CELL_MINUTES*0.7)}"></span>やや多い
+        <span class="legend-swatch" style="background:${heatColor(MAX_CELL_MINUTES)}"></span>非常に多い
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🏆 居眠り☆ランキング（架空データ）</h2>
+      <p class="subtitle">居眠り回数の多い順。💤の数がだいたいの回数イメージです（最大5個表示）。</p>
+      <ul class="ranking-list">${rankingHtml}</ul>
+    </div>
+  `;
+}
+
+/* ---------- 議員一覧 ---------- */
+
+let listState = { sort:"count", party:"all" };
+
+function renderList(){
+  return `
+    <div class="card">
+      <h2>👥 議員一覧（架空データ）</h2>
+      <div class="list-controls">
+        <select id="filter-party">
+          <option value="all">すべての政党</option>
+          ${PARTIES.map(p=>`<option value="${p}">${p}</option>`).join("")}
+        </select>
+        <select id="sort-select">
+          <option value="count">居眠り回数が多い順</option>
+          <option value="minutes">合計時間が長い順</option>
+          <option value="name">名前順</option>
+        </select>
+      </div>
+      <div class="legislator-grid" id="legislator-grid"></div>
+    </div>
+  `;
+}
+
+function bindListControls(){
+  const grid = document.getElementById("legislator-grid");
+  const partySel = document.getElementById("filter-party");
+  const sortSel = document.getElementById("sort-select");
+  partySel.value = listState.party;
+  sortSel.value = listState.sort;
+
+  function draw(){
+    let items = LEGISLATORS.filter(l => listState.party==="all" || l.party===listState.party);
+    if(listState.sort==="count") items.sort((a,b)=> totalCount(b.id)-totalCount(a.id));
+    else if(listState.sort==="minutes") items.sort((a,b)=> totalMinutes(b.id)-totalMinutes(a.id));
+    else items.sort((a,b)=> a.kana.localeCompare(b.kana,"ja"));
+
+    grid.innerHTML = items.map(l=>`
+      <a class="legislator-card" href="#/legislator/${l.id}" style="text-decoration:none;color:inherit;">
+        <div class="name">${l.name}</div>
+        <span class="party-badge">${l.party}</span>
+        <div style="font-size:0.8rem;color:var(--ink-soft);">${l.district}｜当選${l.terms}回</div>
+        <div class="stats">
+          <div>居眠り回数<br><b>${totalCount(l.id)}</b>件</div>
+          <div>合計時間<br><b>${totalMinutes(l.id)}</b>分</div>
+        </div>
+      </a>
+    `).join("");
+  }
+
+  partySel.addEventListener("change", e=>{ listState.party=e.target.value; draw(); });
+  sortSel.addEventListener("change", e=>{ listState.sort=e.target.value; draw(); });
+  draw();
+}
+
+/* ---------- 議員個別ページ ---------- */
+
+function renderProfile(id){
+  const leg = LEGISLATORS.find(l=>l.id===id);
+  if(!leg){
+    return `<div class="card">議員が見つかりません。<a href="#/list">一覧へ戻る</a></div>`;
+  }
+  const evs = legislatorEvents(id).slice().sort((a,b)=>{
+    const ma = MEETINGS.find(m=>m.id===a.meetingId).datetime;
+    const mb = MEETINGS.find(m=>m.id===b.meetingId).datetime;
+    return mb.localeCompare(ma);
+  });
+
+  const timelineHtml = evs.length ? evs.map(e=>{
+    const m = MEETINGS.find(mm=>mm.id===e.meetingId);
+    const explained = !!e.explanation;
+    return `<li class="${explained?"explained":"unexplained"}">
+      <div class="event-top">
+        <span>${m.name}</span>
+        <span style="font-weight:600;font-size:0.82rem;color:var(--ink-soft);">${m.datetime}</span>
+      </div>
+      <div class="event-meta">
+        推定居眠り時間：<b>${e.minutes}分</b>／出典：${e.source}<br>
+        <span class="badge ${e.confidence}">${e.confidence==="confirmed"?"明確に居眠りと確認できる":"目を閉じていたが不明"}</span>
+        <span class="badge ${explained?"explained":"unexplained"}">${explained? e.explanation : "説明なし"}</span>
+      </div>
+      <span class="video-link" data-video="${e.video}">▶ 動画を見る（デモ・再生不可）</span>
+    </li>`;
+  }).join("") : `<li style="border-left-color:var(--green);background:var(--green-soft);">記録されている居眠りイベントはありません。</li>`;
+
+  return `
+    <div class="card">
+      <a href="#/list">&larr; 議員一覧へ戻る</a>
+      <div class="profile-header" style="margin-top:10px;">
+        <div>
+          <h1>${leg.name}</h1>
+          <div style="color:var(--ink-soft);">${leg.kana}</div>
+          <span class="party-badge">${leg.party}</span>
+          <div style="margin-top:6px;font-size:0.9rem;">${leg.district}｜当選${leg.terms}回（すべて架空）</div>
+        </div>
+      </div>
+      <div class="summary-stats">
+        <div class="stat-pill"><div class="num">${totalCount(leg.id)}</div><div class="label">居眠り回数（件）</div></div>
+        <div class="stat-pill"><div class="num">${totalMinutes(leg.id)}</div><div class="label">合計時間（分）</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>🕒 居眠りイベント タイムライン</h2>
+      <p class="subtitle">
+        <span class="badge explained">緑</span>本人・関係者からの説明があるもの
+        <span class="badge unexplained">赤</span>説明なしのもの
+      </p>
+      <ul class="timeline">${timelineHtml}</ul>
+    </div>
+  `;
+}
+
+/* ---------- このサイトについて ---------- */
+
+function renderAbout(){
+  return `
+    <div class="card">
+      <h1>ℹ️ このサイトについて</h1>
+      <p>本サイト「居眠り議員マップ」は、SNSで提案されたアイデア（議員の居眠りを記録し、選挙の際に参考情報として提示する仕組み）を<b>視覚的に分かりやすく伝えるためのデモ</b>です。</p>
+      <p><b>登場する議員名・政党名・選挙区・会議の日時・居眠りイベントなどは、すべて架空のものです。</b>実在の政治家・政党・団体とは一切関係ありません。動画リンクもすべてダミー（<code>#demo-video-*</code>）で、実際には再生されません。</p>
+    </div>
+
+    <div class="card">
+      <h2>🤔 「居眠り」の判定はなぜ難しいのか</h2>
+      <ul>
+        <li>目を閉じていても、実際には<b>考え事をしていた</b>だけの場合があります。</li>
+        <li><b>体調不良</b>で一時的に目を閉じている場合があります。</li>
+        <li><b>薬の副作用</b>で眠気が強くなっている場合があります。</li>
+        <li>深夜まで及ぶ審議など、<b>過重労働的なスケジュール</b>が背景にある場合もあります。</li>
+      </ul>
+      <p>そのため、このデモでは「確度（明確に居眠りと確認できる／目を閉じていたが不明）」と「説明の有無」を必ずセットで表示し、一方的に断定・非難する設計にしないことを意識しています。</p>
+    </div>
+
+    <div class="card">
+      <h2>💬 ご意見募集</h2>
+      <p>このアイデア自体について、ご意見・ご感想を募集しています。（実際の運用ではここにXへの投稿・リンク誘導文言が入る想定です。以下はプレースホルダーです。）</p>
+      <p style="background:#F7F3E4;border-radius:10px;padding:10px 14px;font-size:0.88rem;color:var(--ink-soft);">
+        [ここにXでのご意見募集ポスト・リンクが入る予定地] &nbsp;→&nbsp; <a href="#demo-video-x" class="video-link-placeholder" data-video="#demo-x">ダミーリンク</a>
+      </p>
+    </div>
+  `;
+}
+
+/* ---------- 動画ダミーリンク・モーダル ---------- */
+
+function bindVideoLinks(){
+  document.querySelectorAll("[data-video]").forEach(el=>{
+    el.addEventListener("click", e=>{
+      e.preventDefault();
+      document.getElementById("video-modal").classList.add("open");
+    });
+  });
+}
+
+document.getElementById("video-modal-close").addEventListener("click", ()=>{
+  document.getElementById("video-modal").classList.remove("open");
+});
+document.getElementById("video-modal").addEventListener("click", e=>{
+  if(e.target.id === "video-modal") e.currentTarget.classList.remove("open");
+});
+
+window.addEventListener("hashchange", render);
+render();
+</script>
+</body>
+</html>
