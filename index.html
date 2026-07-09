@@ -6,25 +6,24 @@
 <title>居眠り議員マップ（デモ）</title>
 <style>
   :root{
-    --ink:#20262E;
-    --ink-soft:#5B6472;
-    --bg:#EDEFF2;
-    --sheet-bg:#FFFFFF;
-    --grid:#D6DBE1;
-    --chrome-bg:#EEF0F3;
-    --chrome-ink:#7C8794;
-    --titlebar-bg:#1B4A3A;
-    --titlebar-ink:#F4F5F7;
-    --accent:#1E7145;
-    --accent-soft:#E4F0E8;
-    --yellow:#C99A2E;
-    --yellow-soft:#FBF1D9;
-    --red:#B23A3A;
-    --red-soft:#F7E4E2;
-    --green:#2F7D4F;
-    --green-soft:#E3F0E7;
-    --blue:#2F5FA3;
-    --blue-soft:#E5EBF5;
+    --ink:#2B2721;
+    --ink-soft:#7C7362;
+    --bg:#F7F1E4;
+    --surface:#FFFFFF;
+    --surface-alt:#FBF6EA;
+    --grid:#E8DFC9;
+    --chrome-bg:#F1E9D4;
+    --chrome-ink:#97896D;
+    --brand:#3E7EBD;
+    --brand-soft:#E7F0F8;
+    --yellow:#E3A93B;
+    --yellow-soft:#FBF0D9;
+    --red:#E2604F;
+    --red-soft:#FBE4DF;
+    --green:#3C9C7C;
+    --green-soft:#E1F1EA;
+    --blue:#3E7EBD;
+    --blue-soft:#E7F0F8;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -33,90 +32,111 @@
     color:var(--ink);
     font-family:"Yu Gothic","YuGothic","游ゴシック体","Hiragino Kaku Gothic ProN","Hiragino Sans",Meiryo,sans-serif;
     font-size:13.5px;
-    line-height:1.55;
+    line-height:1.6;
   }
-  a{color:var(--blue);}
+  a{color:var(--brand);}
   table{font-variant-numeric:tabular-nums;}
+  h1,h2{text-wrap:balance;}
 
-  /* ---------- 上部固定クローム：タイトルバー／通知バー／数式バー ---------- */
+  /* ---------- 上部固定クローム：タイトルバー／通知バー ---------- */
   #app-chrome-top{position:fixed; top:0; left:0; right:0; z-index:1000;}
   .titlebar{
-    background:var(--titlebar-bg); color:var(--titlebar-ink);
+    background:var(--surface-alt); border-bottom:1px solid var(--grid);
     display:flex; align-items:center; justify-content:space-between;
-    padding:7px 14px; font-size:13px; font-weight:600;
-    border-bottom:1px solid #123527;
+    padding:9px 16px;
   }
-  .titlebar .doc-icon{
-    display:inline-block; width:11px; height:13px; margin-right:7px;
-    background:#F4F5F7; border:1px solid #123527; vertical-align:-1px;
-    position:relative;
+  .titlebar .brand{display:flex; align-items:center; gap:9px; font-weight:800; font-size:14.5px; color:var(--ink);}
+  .titlebar .brand-badge{
+    flex:none; width:26px; height:26px; border-radius:8px; background:var(--brand);
+    color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700;
   }
-  .titlebar .doc-icon::after{
-    content:""; position:absolute; right:-1px; top:-1px; width:4px; height:4px;
-    background:var(--titlebar-bg); border-left:1px solid #123527; border-bottom:1px solid #123527;
-  }
-  .titlebar .readonly-tag{
-    font-size:10.5px; font-weight:600; color:#CFE3D8; border:1px solid #3E6E5A;
-    padding:2px 7px; letter-spacing:0.03em;
+  .titlebar .tag{
+    font-size:10.5px; font-weight:700; color:var(--ink-soft); background:var(--chrome-bg);
+    border:1px solid var(--grid); padding:3px 10px; border-radius:999px; letter-spacing:0.02em;
   }
 
   .noticebar{
-    background:var(--yellow-soft); border-bottom:1px solid #E4C874;
+    background:var(--yellow-soft); border-bottom:1px solid var(--grid);
     display:flex; align-items:center; gap:9px;
-    padding:7px 14px; font-size:12.5px; color:#6B5410;
+    padding:8px 16px; font-size:12.5px; color:#6B5410;
   }
   .noticebar .flag{
-    flex:none; width:14px; height:14px; background:var(--yellow); color:#fff;
-    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:10px;
+    flex:none; width:18px; height:18px; border-radius:50%; background:var(--yellow); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px;
   }
   .noticebar b{color:#8a4b1f;}
-
-  .formulabar{
-    background:#F7F8FA; border-bottom:1px solid var(--grid);
-    display:flex; align-items:stretch; font-size:12.5px; color:var(--ink-soft);
-  }
-  .formulabar .namebox{
-    flex:none; width:76px; padding:6px 8px; border-right:1px solid var(--grid);
-    color:var(--ink); font-weight:700; background:#EEF0F3;
-  }
-  .formulabar .fx{
-    flex:none; width:26px; display:flex; align-items:center; justify-content:center;
-    border-right:1px solid var(--grid); font-style:italic; color:#8a95a3; font-size:12px;
-  }
-  .formulabar .content{padding:6px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
 
   /* ---------- 下部固定シートタブ ---------- */
   #app-chrome-bottom{
     position:fixed; bottom:0; left:0; right:0; z-index:1000;
-    background:#DDE1E6; border-top:1px solid var(--grid);
+    background:var(--surface); border-top:1px solid var(--grid);
+    box-shadow:0 -4px 14px rgba(60,40,10,0.06);
     overflow-x:auto; white-space:nowrap;
   }
-  .sheet-tabs{display:flex; align-items:stretch; height:34px;}
+  .sheet-tabs{display:flex; align-items:stretch; height:42px; padding:0 8px; gap:4px;}
   .sheet-tabs a{
-    display:flex; align-items:center; padding:0 16px; font-size:12.5px; font-weight:600;
-    color:var(--ink-soft); border-right:1px solid var(--grid); text-decoration:none;
-    background:#D3D8DE;
+    display:flex; align-items:center; padding:0 16px; font-size:12.5px; font-weight:700;
+    color:var(--ink-soft); text-decoration:none; border-radius:10px 10px 0 0; margin-top:6px;
   }
-  .sheet-tabs a.active{
-    background:var(--sheet-bg); color:var(--ink); border-top:2px solid var(--accent);
-    margin-top:-1px;
+  .sheet-tabs a.active{background:var(--brand-soft); color:var(--brand);}
+  .sheet-tabs a:hover:not(.active){background:var(--chrome-bg);}
+
+  main{max-width:1100px; margin:0 auto; padding:18px 14px 24px;}
+
+  /* ---------- ホーム：ヒーロー ---------- */
+  .hero{
+    position:relative; overflow:hidden; background:var(--surface-alt);
+    border:1px solid var(--grid); border-radius:20px; padding:32px 22px; text-align:center; margin-bottom:18px;
   }
+  .hero::before{
+    content:""; position:absolute; top:-90px; right:-60px; width:260px; height:260px;
+    background:radial-gradient(circle, var(--yellow) 0%, transparent 70%); opacity:0.28;
+  }
+  .hero::after{
+    content:""; position:absolute; bottom:-120px; left:-60px; width:280px; height:280px;
+    background:radial-gradient(circle, var(--blue) 0%, transparent 70%); opacity:0.22;
+  }
+  .hero-title{position:relative; z-index:1; font-size:1.6rem; font-weight:800; margin:0 0 8px; letter-spacing:0.01em;}
+  .hero-sub{position:relative; z-index:1; color:var(--ink-soft); font-size:13px; margin:0 0 22px;}
+  .feature-grid{
+    position:relative; z-index:1; display:grid; grid-template-columns:repeat(4,1fr); gap:10px; text-align:left;
+  }
+  .feature-item{
+    background:var(--surface); border:1px solid var(--grid); border-radius:12px; padding:12px;
+    display:flex; gap:10px; align-items:flex-start;
+  }
+  .feature-icon{
+    flex:none; width:30px; height:30px; border-radius:9px; display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:700; font-size:14px;
+  }
+  .feature-icon.yellow{background:var(--yellow);}
+  .feature-icon.red{background:var(--red);}
+  .feature-icon.green{background:var(--green);}
+  .feature-icon.blue{background:var(--blue);}
+  .feature-title{font-weight:700; font-size:12.5px; margin-bottom:2px;}
+  .feature-sub{font-size:11px; color:var(--ink-soft); line-height:1.4;}
 
-  main{max-width:1100px; margin:0 auto; padding:16px 14px 24px;}
-
-  /* ---------- 汎用ブロック（角丸・シャドウなし） ---------- */
+  /* ---------- 汎用ブロック ---------- */
   .block{
-    background:var(--sheet-bg); border:1px solid var(--grid); margin-bottom:16px;
+    background:var(--surface); border:1px solid var(--grid); border-radius:14px; margin-bottom:18px;
+    overflow:hidden; box-shadow:0 1px 3px rgba(60,40,10,0.05);
   }
   .block-head{
-    background:var(--chrome-bg); border-bottom:1px solid var(--grid);
-    padding:7px 12px; font-weight:700; font-size:13px; color:var(--ink);
+    background:var(--surface-alt); border-bottom:1px solid var(--grid);
+    padding:10px 16px; font-weight:700; font-size:13.5px; color:var(--ink);
+    display:flex; align-items:center; gap:9px;
   }
-  .block-body{padding:12px 14px;}
+  .block-head .dot{width:8px; height:8px; border-radius:50%; flex:none;}
+  .block-head .dot.yellow{background:var(--yellow);}
+  .block-head .dot.red{background:var(--red);}
+  .block-head .dot.green{background:var(--green);}
+  .block-head .dot.blue{background:var(--blue);}
+  .block-head .back-link{margin-left:auto; font-weight:400; font-size:12px;}
+  .block-body{padding:14px 16px;}
 
   .comment-box{
-    background:var(--yellow-soft); border:1px solid #E4C874;
-    padding:9px 13px; font-size:12.5px; color:#5b4a12; margin-bottom:14px;
+    background:var(--yellow-soft); border:1px solid #EAD9AE; border-radius:12px;
+    padding:11px 15px; font-size:12.5px; color:#5b4a12; margin-bottom:16px;
   }
   .comment-box .comment-label{
     display:block; font-weight:700; font-size:10.5px; color:#8a6d1f;
@@ -124,10 +144,10 @@
   }
 
   /* ---------- スプレッドシート・テーブル ---------- */
-  .sheet-wrap{overflow-x:auto; border:1px solid var(--grid); border-top:none;}
+  .sheet-wrap{overflow-x:auto;}
   table.sheet{border-collapse:collapse; width:100%; font-size:12.5px; min-width:600px;}
   table.sheet th, table.sheet td{
-    border:1px solid var(--grid); padding:5px 9px; white-space:nowrap;
+    border:1px solid var(--grid); padding:6px 10px; white-space:nowrap;
   }
   table.sheet .chrome{
     background:var(--chrome-bg); color:var(--chrome-ink); text-align:center;
@@ -136,89 +156,100 @@
   table.sheet .chrome.corner{left:0; top:0; z-index:3; width:34px;}
   table.sheet .chrome.col-letter{top:0;}
   table.sheet .chrome.row-num{left:0; width:34px;}
-  table.sheet .cell{background:var(--sheet-bg); color:var(--ink);}
-  table.sheet .cell.head{font-weight:700; background:#F6F8F6;}
+  table.sheet .cell{background:var(--surface); color:var(--ink);}
+  table.sheet .cell.head{font-weight:700; background:var(--surface-alt);}
   table.sheet .cell.head.tint-yellow{background:var(--yellow-soft);}
-  table.sheet .cell.sticky-col{position:sticky; left:34px; z-index:1; background:#FBFBFC;}
-  table.sheet tbody tr.row-link:hover td{background:#EFF6F1;}
+  table.sheet .cell.sticky-col{position:sticky; left:34px; z-index:1; background:#FDFBF3;}
+  table.sheet tbody tr.row-link:hover td{background:var(--brand-soft);}
   table.sheet tbody tr.row-link{cursor:pointer;}
   table.sheet .cell.fmt-positive{background:var(--green-soft); color:#1f5536;}
-  table.sheet .cell.fmt-warning{background:var(--red-soft); color:#7a2a2a;}
-  table.sheet .cell a.cell-link{color:var(--blue); text-decoration:none;}
+  table.sheet .cell.fmt-warning{background:var(--red-soft); color:#8a3226;}
+  table.sheet .cell a.cell-link{color:var(--brand); text-decoration:none; font-weight:600;}
   table.sheet .cell a.cell-link:hover{text-decoration:underline;}
   table.sheet .cell.dim{color:var(--chrome-ink);}
 
-  .icon-set{font-weight:700; margin-right:3px;}
-  .icon-set.confirmed{color:var(--blue);}
-  .icon-set.unclear{color:var(--ink-soft);}
+  .mini-badge{
+    display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px;
+    border-radius:50%; font-size:9px; color:#fff; margin-right:5px; font-weight:800; flex:none;
+  }
+  .mini-badge.confirmed{background:var(--blue);}
+  .mini-badge.unclear{background:var(--ink-soft);}
 
   .databar-cell{position:relative; min-width:110px;}
-  .databar-track{position:relative; height:14px;}
-  .databar-fill{
-    position:absolute; left:0; top:0; bottom:0; background:var(--yellow); opacity:0.55;
-  }
-  .databar-label{position:relative; z-index:1; font-weight:700;}
+  .databar-track{position:relative; height:14px; background:var(--chrome-bg); border-radius:7px; overflow:hidden;}
+  .databar-fill{position:absolute; left:0; top:0; bottom:0; background:var(--yellow);}
+  .databar-label{position:relative; z-index:1; font-weight:700; padding-left:6px;}
 
   .video-cell-link{
-    color:var(--blue); cursor:pointer; text-decoration:none; border-bottom:1px dotted var(--blue);
+    color:var(--brand); cursor:pointer; font-weight:600; text-decoration:none; border-bottom:1px dotted var(--brand);
   }
 
   /* ---------- ツールバー（フィルタ／並び替え） ---------- */
   .toolbar{
-    display:flex; flex-wrap:wrap; gap:0; align-items:stretch; border:1px solid var(--grid); border-bottom:none;
-    background:#F7F8FA; font-size:12px;
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    padding:10px 16px; background:var(--surface-alt); border-bottom:1px solid var(--grid);
   }
-  .toolbar .group{display:flex; align-items:center; gap:6px; padding:6px 12px; border-right:1px solid var(--grid); white-space:nowrap;}
-  .toolbar label{color:var(--ink-soft); font-weight:600; white-space:nowrap;}
+  .toolbar .group{display:flex; align-items:center; gap:7px; white-space:nowrap;}
+  .toolbar label{color:var(--ink-soft); font-weight:600; white-space:nowrap; font-size:12px;}
   .toolbar select{
-    font-family:inherit; font-size:12px; border:1px solid var(--grid); background:#fff;
-    padding:3px 6px; color:var(--ink);
+    font-family:inherit; font-size:12px; border:1px solid var(--grid); border-radius:999px;
+    background:#fff; padding:5px 12px; color:var(--ink);
   }
 
   /* ---------- プロフィールの record シート ---------- */
-  .record-grid{display:grid; grid-template-columns:120px 1fr; border:1px solid var(--grid); font-size:12.5px;}
-  .record-grid > div{border-bottom:1px solid var(--grid); border-right:1px solid var(--grid); padding:6px 10px;}
-  .record-grid > div:nth-child(odd){background:var(--chrome-bg); color:var(--ink-soft); font-weight:600;}
+  .record-grid{
+    display:grid; grid-template-columns:120px 1fr; border:1px solid var(--grid); border-radius:10px;
+    overflow:hidden; font-size:12.5px;
+  }
+  .record-grid > div{border-bottom:1px solid var(--grid); border-right:1px solid var(--grid); padding:7px 11px;}
+  .record-grid > div:nth-child(odd){background:var(--surface-alt); color:var(--ink-soft); font-weight:600;}
   .record-grid > div:nth-last-child(-n+2){border-bottom:none;}
 
-  .kpi-row{display:flex; border:1px solid var(--grid); border-top:none;}
-  .kpi{flex:1; padding:10px 14px; border-right:1px solid var(--grid); background:var(--yellow-soft);}
-  .kpi:last-child{border-right:none;}
-  .kpi .num{font-size:1.5rem; font-weight:800; color:#7a5b0d;}
+  .kpi-row{display:flex; gap:10px; padding:0 16px 16px;}
+  .kpi{flex:1; border:1px solid var(--grid); border-radius:12px; padding:11px 15px;}
+  .kpi.yellow{background:var(--yellow-soft);}
+  .kpi.blue{background:var(--blue-soft);}
+  .kpi .num{font-size:1.5rem; font-weight:800;}
+  .kpi.yellow .num{color:#8a5a0d;}
+  .kpi.blue .num{color:#2a5a86;}
   .kpi .label{font-size:11px; color:var(--ink-soft); margin-top:2px;}
 
   /* ---------- モーダル ---------- */
   .modal-overlay{
-    position:fixed; inset:0; background:rgba(20,26,20,0.45); display:none;
+    position:fixed; inset:0; background:rgba(40,30,15,0.42); display:none;
     align-items:center; justify-content:center; z-index:2000; padding:16px;
   }
   .modal-overlay.open{display:flex;}
   .modal-box{
-    background:#fff; border:1px solid var(--grid); max-width:360px; width:100%;
+    background:#fff; border-radius:14px; overflow:hidden; max-width:360px; width:100%;
+    box-shadow:0 12px 34px rgba(40,30,10,0.2);
   }
   .modal-titlebar{
-    background:var(--titlebar-bg); color:#fff; padding:6px 10px; font-size:12.5px; font-weight:700;
+    background:var(--brand); color:#fff; padding:9px 14px; font-size:12.5px; font-weight:700;
     display:flex; justify-content:space-between; align-items:center;
   }
   .modal-titlebar button{
-    background:none; border:none; color:#fff; font-size:13px; cursor:pointer; line-height:1;
-    padding:2px 6px;
+    background:none; border:none; color:#fff; font-size:15px; cursor:pointer; line-height:1;
+    padding:2px 6px; opacity:0.85;
   }
-  .modal-body{padding:16px 16px 14px; font-size:12.5px; color:var(--ink);}
+  .modal-titlebar button:hover{opacity:1;}
+  .modal-body{padding:18px 18px 16px; font-size:12.5px; color:var(--ink);}
   .modal-body .ok-btn{
-    margin-top:12px; padding:5px 16px; border:1px solid #8a97a3; background:#F1F3F5;
-    font-family:inherit; font-size:12px; cursor:pointer; color:var(--ink);
+    margin-top:14px; padding:6px 20px; border:none; border-radius:999px; background:var(--brand); color:#fff;
+    font-family:inherit; font-size:12px; font-weight:700; cursor:pointer;
   }
-  .modal-body .ok-btn:hover{background:#E4E8EB;}
+  .modal-body .ok-btn:hover{background:#356b9f;}
 
   footer{
-    text-align:center; color:var(--ink-soft); font-size:11.5px; padding:8px 14px 20px; max-width:1100px; margin:0 auto;
+    text-align:center; color:var(--ink-soft); font-size:11.5px; padding:8px 14px 24px; max-width:1100px; margin:0 auto;
   }
 
   @media (max-width:640px){
     body{font-size:13px;}
-    .titlebar .readonly-tag{display:none;}
-    .formulabar .namebox{width:56px;}
+    .titlebar .tag{display:none;}
+    .hero{padding:24px 16px;}
+    .hero-title{font-size:1.3rem;}
+    .feature-grid{grid-template-columns:repeat(2,1fr);}
     .kpi .num{font-size:1.2rem;}
   }
 </style>
@@ -227,17 +258,12 @@
 
 <div id="app-chrome-top">
   <div class="titlebar">
-    <span><span class="doc-icon"></span>居眠り議員マップ.xlsx</span>
-    <span class="readonly-tag">読み取り専用モード（デモ）</span>
+    <span class="brand"><span class="brand-badge">眠</span>居眠り議員マップ</span>
+    <span class="tag">デモ版・架空データ</span>
   </div>
   <div class="noticebar">
     <span class="flag">!</span>
     <span>これは<b>サンプルデモ</b>です。登場人物・データはすべて<b>架空</b>であり、実在の政治家・政党とは一切関係ありません。</span>
-  </div>
-  <div class="formulabar">
-    <div class="namebox" id="namebox">Map!A1</div>
-    <div class="fx">fx</div>
-    <div class="content" id="formula-content"></div>
   </div>
 </div>
 
@@ -364,10 +390,10 @@ const MAX_COUNT = Math.max(...LEGISLATORS.map(l=>totalCount(l.id)));
 function heatColor(minutes){
   if(minutes<=0) return "#FFFFFF";
   const ratio = Math.min(1, minutes / MAX_CELL_MINUTES);
-  // 白(255,255,255) -> 赤(178,58,58) の補間（条件付き書式の色スケールを模す）
-  const r = Math.round(255 + (178-255)*ratio);
-  const g = Math.round(255 + (58-255)*ratio);
-  const b = Math.round(255 + (58-255)*ratio);
+  // 白(255,255,255) -> 赤(226,96,79) の補間（条件付き書式の色スケールを模す）
+  const r = Math.round(255 + (226-255)*ratio);
+  const g = Math.round(255 + (96-255)*ratio);
+  const b = Math.round(255 + (79-255)*ratio);
   return `rgb(${r},${g},${b})`;
 }
 
@@ -386,7 +412,7 @@ function colLetter(n){
 }
 
 /* ==========================================================
-   スプレッドシート・テーブル генератор
+   スプレッドシート・テーブル生成
    columns: [{label, align, tint}]
    dataRows: [{ cells:[{html, align, class, style}], href? }]
    ========================================================== */
@@ -426,8 +452,6 @@ function bindRowLinks(container){
 const app = document.getElementById("app");
 const topChrome = document.getElementById("app-chrome-top");
 const bottomChrome = document.getElementById("app-chrome-bottom");
-const formulaContent = document.getElementById("formula-content");
-const namebox = document.getElementById("namebox");
 
 function adjustChromePadding(){
   document.body.style.paddingTop = topChrome.offsetHeight + "px";
@@ -440,23 +464,14 @@ function render(){
   updateNav(path);
 
   if(path === "/" || path === "") {
-    namebox.textContent = "Map!A1";
-    formulaContent.textContent = "=議員×会議 居眠り記録一覧（架空データ）";
     app.innerHTML = renderHome();
   } else if(path === "/list") {
-    namebox.textContent = "List!A1";
-    formulaContent.textContent = "=議員一覧（架空データ）";
     app.innerHTML = renderList();
     bindListControls();
   } else if(path.startsWith("/legislator/")) {
     const id = path.split("/")[2];
-    const leg = LEGISLATORS.find(l=>l.id===id);
-    namebox.textContent = "Profile!A1";
-    formulaContent.textContent = leg ? `=議員一覧!${leg.name}` : "=議員が見つかりません";
     app.innerHTML = renderProfile(id);
   } else if(path === "/about") {
-    namebox.textContent = "About!A1";
-    formulaContent.textContent = "=このサイトについて（免責・注意事項）";
     app.innerHTML = renderAbout();
   } else {
     app.innerHTML = "<div class='block'><div class='block-body'>ページが見つかりません。</div></div>";
@@ -474,7 +489,7 @@ function updateNav(path){
   });
 }
 
-/* ---------- マップ：ヒートマップ + ランキング ---------- */
+/* ---------- マップ：ヒーロー + ヒートマップ + ランキング ---------- */
 
 function renderHome(){
   const columns = [{label:"議員", align:"left"}].concat(
@@ -514,7 +529,7 @@ function renderHome(){
         {html:String(i+1), align:"right"},
         {html:`<a class="cell-link" href="#/legislator/${leg.id}">${leg.name}</a>`, align:"left"},
         {html:leg.party, align:"left"},
-        {html:`<div class="databar-cell"><div class="databar-track"><div class="databar-fill" style="width:${pct}%"></div><span class="databar-label">${c}件</span></div></div>`, align:"left"},
+        {html:`<div class="databar-cell"><div class="databar-track"><div class="databar-fill" style="width:${pct}%"></div></div><span class="databar-label">${c}件</span></div>`, align:"left"},
         {html:`${min}`, align:"right"},
       ],
       href:`/legislator/${leg.id}`
@@ -522,21 +537,44 @@ function renderHome(){
   });
 
   return `
+    <div class="hero">
+      <h1 class="hero-title">居眠りも、見える形に。</h1>
+      <p class="hero-sub">架空データでたどる「居眠り議員マップ」のデモです。まずは下のヒートマップから見てみましょう。</p>
+      <div class="feature-grid">
+        <div class="feature-item">
+          <span class="feature-icon yellow">▦</span>
+          <div><div class="feature-title">ヒートマップで一覧</div><div class="feature-sub">議員×会議を色の濃淡で表示</div></div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon red">!</span>
+          <div><div class="feature-title">気になる記録も可視化</div><div class="feature-sub">居眠り時間・回数をひと目で</div></div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon green">✓</span>
+          <div><div class="feature-title">説明の有無も併記</div><div class="feature-sub">一方的に断定しない設計</div></div>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon blue">≡</span>
+          <div><div class="feature-title">議員ごとに詳細を確認</div><div class="feature-sub">架空データのプロフィール付き</div></div>
+        </div>
+      </div>
+    </div>
+
     <div class="comment-box">
       <span class="comment-label">コメント</span>
       「居眠り」の判定は本来グレーゾーンです。目を閉じていても考え事をしていた場合や、体調不良・服薬の影響で目を閉じていた場合もあります。このシートはあくまで記録の一例であり、断定的な評価ではありません。
     </div>
 
     <div class="block">
-      <div class="block-head">議員 × 会議　居眠りヒートマップ（架空データ）</div>
+      <div class="block-head"><span class="dot red"></span>議員 × 会議　居眠りヒートマップ（架空データ）</div>
       <div class="block-body" style="padding-bottom:8px;">
-        <p style="margin:0 0 8px;color:var(--ink-soft);font-size:12px;">セルの色が濃いほど、その会議での居眠り推定時間（分）が長いことを示す条件付き書式です。数値は合計分数、行または議員名クリックで個別シートへ移動します。</p>
+        <p style="margin:0;color:var(--ink-soft);font-size:12px;">セルの色が濃いほど、その会議での居眠り推定時間（分）が長いことを示す条件付き書式です。数値は合計分数、行または議員名クリックで個別シートへ移動します。</p>
       </div>
       ${sheetTable(columns, rows, {stickyFirstCol:true})}
     </div>
 
     <div class="block">
-      <div class="block-head">居眠り回数ランキング（架空データ）</div>
+      <div class="block-head"><span class="dot yellow"></span>居眠り回数ランキング（架空データ）</div>
       ${sheetTable(rankColumns, rankRows)}
     </div>
   `;
@@ -549,7 +587,7 @@ let listState = { sort:"count", party:"all" };
 function renderList(){
   return `
     <div class="block">
-      <div class="block-head">議員一覧（架空データ）</div>
+      <div class="block-head"><span class="dot blue"></span>議員一覧（架空データ）</div>
       <div class="toolbar">
         <div class="group">
           <label for="filter-party">政党</label>
@@ -641,8 +679,8 @@ function renderProfile(id){
     const m = MEETINGS.find(mm=>mm.id===e.meetingId);
     const explained = !!e.explanation;
     const confHtml = e.confidence==="confirmed"
-      ? '<span class="icon-set confirmed">●</span>明確に確認できる'
-      : '<span class="icon-set unclear">◐</span>目を閉じていたが不明';
+      ? '<span class="mini-badge confirmed">✓</span>明確に確認できる'
+      : '<span class="mini-badge unclear">?</span>目を閉じていたが不明';
     return {
       cells:[
         {html:m.datetime, align:"left"},
@@ -651,7 +689,7 @@ function renderProfile(id){
         {html:`<span class="dim">${e.source}</span>`, align:"left"},
         {html:confHtml, align:"left"},
         {html: explained ? e.explanation : "説明なし", align:"left", class: explained ? "fmt-positive" : "fmt-warning"},
-        {html:`<span class="video-cell-link" data-video="${e.video}">動画を見る（デモ）</span>`, align:"left"},
+        {html:`<span class="video-cell-link" data-video="${e.video}">▶ 動画を見る（デモ）</span>`, align:"left"},
       ]
     };
   });
@@ -662,7 +700,7 @@ function renderProfile(id){
 
   return `
     <div class="block">
-      <div class="block-head">議員プロフィール（架空データ）　<a href="#/list" style="font-weight:400;font-size:12px;">&larr; 一覧へ戻る</a></div>
+      <div class="block-head"><span class="dot blue"></span>議員プロフィール（架空データ）<a href="#/list" class="back-link">&larr; 一覧へ戻る</a></div>
       <div class="block-body" style="padding-bottom:0;">
         <div class="record-grid">
           <div>氏名</div><div>${leg.name}（${leg.kana}）</div>
@@ -671,14 +709,14 @@ function renderProfile(id){
           <div>当選回数</div><div>当選${leg.terms}回（すべて架空）</div>
         </div>
       </div>
-      <div class="kpi-row">
-        <div class="kpi"><div class="num">${totalCount(leg.id)}</div><div class="label">居眠り回数（件）</div></div>
-        <div class="kpi"><div class="num">${totalMinutes(leg.id)}</div><div class="label">合計時間（分）</div></div>
+      <div class="kpi-row" style="margin-top:14px;">
+        <div class="kpi yellow"><div class="num">${totalCount(leg.id)}</div><div class="label">居眠り回数（件）</div></div>
+        <div class="kpi blue"><div class="num">${totalMinutes(leg.id)}</div><div class="label">合計時間（分）</div></div>
       </div>
     </div>
 
     <div class="block">
-      <div class="block-head">居眠りイベント　タイムライン</div>
+      <div class="block-head"><span class="dot red"></span>居眠りイベント　タイムライン</div>
       <div class="block-body" style="padding-bottom:8px;">
         <p style="margin:0;color:var(--ink-soft);font-size:12px;">
           「本人・関係者の説明」列：緑＝説明があるもの／赤＝説明なしのもの。一方的な断定ではなく事情も併記しています。
